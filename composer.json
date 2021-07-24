@@ -1,0 +1,24 @@
+{
+    "name": "basecode/route",
+    "description": "Component route, componente para criação de projetos mvc com rotas.",
+    "minimum-stability": "stable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Arthur Henrique",
+            "email": "arthurthcoder@gmail.com",
+            "role": "Developer"
+        }
+    ],
+    "config": {
+        "vendor-dir": "vendor"
+    },
+    "autoload": {
+        "psr-4": {
+            "BaseCode\\Route\\": "src" 
+        }
+    },
+    "require": {
+        "php": ">=7.0"
+    }
+}
