@@ -1,6 +1,11 @@
 {
     "name": "basecode/route",
     "description": "Component route, componente para criação de projetos mvc com rotas.",
+    "keywords": [
+        "BaseCode",
+        "Route",
+        "Thcoder"
+    ],
     "minimum-stability": "stable",
     "license": "MIT",
     "authors": [
