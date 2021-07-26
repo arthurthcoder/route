@@ -17,6 +17,8 @@
         $route->delete(string:route, string|function:action, string:name_route);
     */
 
+    // $route->namespace("Controllers");
+
     $route->get("/", function($data) use ($route) {
         echo "<h1>HOME PAGE</h1><br><a href=\"{$route->route('user.login')}\">Login</a>";
     }, "home");

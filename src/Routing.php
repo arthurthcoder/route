@@ -53,7 +53,7 @@ Abstract Class Routing {
 
             $this->domain = $this->trimBar($this->domain);
 
-            $this->namespace = filter_var($namespace, FILTER_SANITIZE_STRING);
+            $this->namespace($namespace);
 
             $this->separator = filter_var($separator, FILTER_SANITIZE_STRING);
             $this->separator = ($this->separator ?: self::CONFIG["separator"]);
@@ -61,6 +61,15 @@ Abstract Class Routing {
         } catch (Exception $e) {
             $this->errors[] = $e->getMessage();
         }
+    }
+
+    /**
+     * namespace
+     * @param string|null $namespace
+     */
+    public function namespace(?string $namespace = null) 
+    {
+        $this->namespace = filter_var($namespace, FILTER_SANITIZE_STRING);
     }
 
     /**
