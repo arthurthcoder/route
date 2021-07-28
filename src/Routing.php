@@ -1,8 +1,6 @@
 <?php
 namespace BaseCode\Route;
 
-use Exception;
-
 Abstract Class Routing
 {
     /** @var array */
@@ -52,6 +50,7 @@ Abstract Class Routing
         $this->debug(false);
 
         if (!$domain) {
+            $this->debug(true);
             $this->error("Nenhum dominio foi definido para route!");
         }
 

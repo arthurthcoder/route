@@ -43,8 +43,8 @@
         echo "<h1>LANDING PAGE</h1>";
     }, "landing.page");
 
-    $route->default(function() {
-        echo "<h1>404 NOT FOUND</h1>";
+    $route->default(function() use ($route) {
+        echo "<h1>404 NOT FOUND</h1><br><a href=\"{$route->route('home')}\">Inicio</a>";
     })->execute();
 
 ?>

@@ -86,7 +86,7 @@ Class Route extends Routing
     public function route(string $name, array $data = [], string $method = null): ?string
     {
         $route = $this->find($name, $method, "name", $data);
-        return (empty($route) ? null : "{$this->domain}/{$route['route']}");
+        return (empty($route) ? null : $this->trimBar("{$this->domain}/{$route['route']}"));
     }
 
 }
