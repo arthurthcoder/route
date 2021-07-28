@@ -3,7 +3,8 @@ namespace BaseCode\Route;
 
 use Exception;
 
-Abstract Class Routing {
+Abstract Class Routing
+{
     /** @var array */
     const CONFIG = [
         "separator" => ":",
@@ -22,11 +23,11 @@ Abstract Class Routing {
     /** @var string */
     private $namespace;
 
-    /** @var string */
-    private $separator;
-
     /** @var array */
     private $router;
+
+    /** @var array */
+    private $default;
 
     /** @var string */
     protected $group;
@@ -73,7 +74,7 @@ Abstract Class Routing {
      * @param string|null $namespace
      * @return Routing
      */
-    public function namespace(?string $namespace): Routing 
+    public function namespace(?string $namespace): Routing
     {
         $this->namespace = $namespace;
         return $this;
@@ -89,12 +90,12 @@ Abstract Class Routing {
     {
         if (!in_array($method, self::CONFIG["allowed"])) {
             $this->error("Método {$method} não permitido!");
+            return;
         }
 
         if (!is_array($this->router)) {
             $this->router = [];
         }
-
 
         if (!isset($this->router[$method])) {
             $this->router[$method] = [];
@@ -106,11 +107,37 @@ Abstract Class Routing {
             $route = $this->trimBar("{$this->group}/{$route}");
         }
 
+        if ($this->namespace) {
+            if (is_string($action) && $action) {
+                $action = "{$this->namespace}\\{$action}";
+            }
+        }
+
         array_push($this->router[$method], [
             "route" => $route,
             "action" => $action,
             "name" => $name
         ]);
+    }
+
+    /**
+     * @param mixed $action
+     * @param array $data
+     * @return Routing
+     */
+    public function default($action, array $data = []): Routing
+    {
+        if ($this->namespace) {
+            if (is_string($action) && $action) {
+                $action = "{$this->namespace}\\{$action}";
+            }
+        }
+
+        $this->default = [
+            "action" => $action,
+            "data" => $data 
+        ];
+        return $this;
     }
 
     /**
@@ -128,12 +155,13 @@ Abstract Class Routing {
 
     /**
      * @param string $name
-     * @return array
+     * @return array|null
      */
-    private function request(string $name = null): array
+    private function request(string $name = null): ?array
     {
         $name = ($name ?: "route");
         $route = filter_input(INPUT_GET, $name, FILTER_SANITIZE_STRING);
+
         $route = $this->trimBar(($route ?: "/"));
 
         if (!$_POST) {
@@ -152,16 +180,9 @@ Abstract Class Routing {
             ];
         }
 
-        if (in_array($method, self::CONFIG["allowed"])) {
-            return [
-                "route" => $route,
-                "method" => $method
-            ];
-        }
-
         return [
             "route" => $route,
-            "method" => "GET"
+            "method" => $method
         ];
     }
 
@@ -181,11 +202,16 @@ Abstract Class Routing {
 
         if (!in_array($option, ["route", "name"])) {
             $this->error("A option {$option} passado para find e inválida!");
+            return null;
         }
 
-        $routeAll = (isset($this->router[$method]) ? [$this->router[$method]] : $this->router);
+        $routeAll = $this->router;
+        
+        if ($method) {
+            $routeAll = (isset($this->router[$method]) ? [$this->router[$method]] : []);
+        }
 
-        if (empty($routeAll)) {
+        if (!$routeAll) {
             return null;
         }
 
@@ -261,6 +287,31 @@ Abstract Class Routing {
     }
 
     /**
+     * @param string $request
+     */
+    public function execute(string $request = null)
+    {
+        $request = $this->request($request);
+
+        $route = $this->find($request["route"], $request["method"], "route");
+
+        if (!$route) {
+            $this->error("A rota {$request["route"]} não foi encontrada!");
+
+            if ($this->default) {
+                $this->action($this->default);
+            }
+            return;
+        }
+
+        $this->action($route);
+
+        if ($this->errors && $this->default) {
+            $this->action($this->default);
+        }
+    }
+
+    /**
      * @param array $route
      */
     private function action(array $route)
@@ -271,43 +322,26 @@ Abstract Class Routing {
             call_user_func($route["action"], $data);
         }else{
             $explode = explode(self::CONFIG["separator"], $route["action"]);
-            $controller = (isset($explode[0]) ? str_replace("/", "\\", $explode[0]) : null);
+            $controller = (isset($explode[0]) ? $explode[0] : null);
             $action = (isset($explode[1]) ? $explode[1] : null);
 
-            if (empty($controller) || empty($action)) {
+            if (!$controller || !$action) {
                 $this->error("A string de ação {$route["action"]} é inválida!");
-            }
-
-            if (!empty($this->namespace)) {
-                $controller = "{$this->namespace}\\{$controller}";
+                return;
             }
 
             if (!class_exists($controller)) {
                 $this->error("O controller {$controller} não existe!");
+                return;
             }
 
             if (!method_exists($controller, $action)) {
-                $this->error("O metodo {$action} do controller não existe!");
+                $this->error("O método {$action} do controller {$controller} não existe!");
+                return;
             }
 
             (new $controller($this))->$action($data);
         }
-    }
-
-    /**
-     * @param string $request
-     */
-    public function execute(string $request = null)
-    {
-        $request = $this->request($request);
-
-        $route = $this->find($request["route"], $request["method"], "route");
-
-        if (empty($route)) {
-            $this->error("A rota {$request["route"]} não foi encontrada!");
-        }
-
-        $this->action($route);
     }
 
     /**

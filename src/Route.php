@@ -1,7 +1,8 @@
 <?php
 namespace BaseCode\Route;
 
-Class Route extends Routing {
+Class Route extends Routing
+{
 
     /**
      * @param string $domain

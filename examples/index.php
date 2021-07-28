@@ -8,7 +8,7 @@
 
     // $route = new BaseCode\Route\Route(DOMAIN, "Controllers", ":");
     $route = new BaseCode\Route\Route(DOMAIN);
-    $route->debug(true);
+    // $route->debug(true);
 
     /* METHODS ALLOWED
         $route->get(string:route, string|function:action, string:name_route);
@@ -34,7 +34,7 @@
 
     $route->namespace(null)->group("usuario");
 
-    $route->get("login", "userController:login", "user.login");
+    $route->get("login", "UserController:login", "user.login");
     /* group usuario end */
 
     $route->group(null);
@@ -43,6 +43,8 @@
         echo "<h1>LANDING PAGE</h1>";
     }, "landing.page");
 
-    $route->execute();
+    $route->default(function() {
+        echo "<h1>404 NOT FOUND</h1>";
+    })->execute();
 
 ?>
