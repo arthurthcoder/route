@@ -21,6 +21,7 @@
     $route->namespace("Controllers");
 
     $route->get("/", function($data) use ($route) {
+        // $route->redirect("landing.page");
         echo "<h1>HOME PAGE</h1><br><a href=\"{$route->route('user.login')}\">Login</a>";
     }, "home");
 

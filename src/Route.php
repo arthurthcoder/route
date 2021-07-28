@@ -89,6 +89,20 @@ Class Route extends Routing
         return (empty($route) ? null : $this->trimBar("{$this->domain}/{$route['route']}"));
     }
 
+    /**
+     * @param string $name
+     * @param array $data
+     * @param string $method
+     */
+    public function redirect(string $name, array $data = [], string $method = null)
+    {
+        $route = $this->route($name, $data, $method);
+        if (filter_var($route, FILTER_VALIDATE_URL)) {
+            header("Location: {$route}");
+            exit;
+        }
+    }
+
 }
 
 ?>
