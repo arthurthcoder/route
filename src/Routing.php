@@ -1,6 +1,11 @@
 <?php
 namespace BaseCode\Route;
 
+
+/**
+ * Class Routing
+ * @package BaseCode\Route
+ */
 Abstract Class Routing
 {
     /** @var array */
@@ -19,10 +24,16 @@ Abstract Class Routing
     protected $domain;
 
     /** @var string */
+    protected $current;
+
+    /** @var string */
     private $namespace;
 
     /** @var array */
     private $router;
+
+    /** @var array */
+    private $custom;
 
     /** @var array */
     private $default;
@@ -117,6 +128,23 @@ Abstract Class Routing
             "action" => $action,
             "name" => $name
         ]);
+    }
+
+    /**
+     * @param string $name
+     * @param string $route
+     * @return string|null
+     */
+    protected function custom(string $name, string $route = null): ?string
+    {
+        if (empty($route)) {
+            return (isset($this->custom[$name]) ? $this->custom[$name] : null);
+        }
+
+        $route = $this->trimBar($route);
+        $this->custom[$name] = "{$this->domain}/{$route}";
+
+        return $this->custom[$name];
     }
 
     /**
@@ -292,9 +320,11 @@ Abstract Class Routing
     {
         $request = $this->request($request);
 
+        $this->current = $request["route"];
+
         $route = $this->find($request["route"], $request["method"], "route");
 
-        if (!$route) {
+        if (empty($route)) {
             $this->error("A rota {$request["route"]} não foi encontrada!");
 
             if ($this->default) {

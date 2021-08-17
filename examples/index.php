@@ -4,7 +4,7 @@
     require_once dirname(__DIR__).DS."vendor".DS."autoload.php";
     require_once dirname(__DIR__).DS."examples".DS."Controllers".DS."UserController.php";
 
-    define("DOMAIN", "https://localhost/components/Route/examples");
+    define("DOMAIN", "https://localhost/basecode/route/examples");
 
     // $route = new BaseCode\Route\Route(DOMAIN, "Controllers", ":");
     $route = new BaseCode\Route\Route(DOMAIN);
@@ -18,10 +18,13 @@
         $route->delete(string:route, string|function:action, string:name_route);
     */
 
+    $route->url('css', 'assets/css');
+
     $route->namespace("Controllers");
 
     $route->get("/", function($data) use ($route) {
         // $route->redirect("landing.page");
+        echo $route->url('css');
         echo "<h1>HOME PAGE</h1><br><a href=\"{$route->route('user.login')}\">Login</a>";
     }, "home");
 

@@ -1,6 +1,10 @@
 <?php
 namespace BaseCode\Route;
 
+/**
+ * Class Route
+ * @package BaseCode\Route
+ */
 Class Route extends Routing
 {
 
@@ -78,6 +82,22 @@ Class Route extends Routing
     }
 
     /**
+     * @return string|null
+     */
+    public function current(): ?string
+    {
+        if (empty($this->current)) {
+            return null;
+        }
+
+        if ($this->current == "/") {
+            return $this->domain;
+        }
+
+        return "{$this->domain}/{$this->current}";
+    }
+
+    /**
      * @param string $name
      * @param array $data
      * @param string|null $method
@@ -101,6 +121,16 @@ Class Route extends Routing
             header("Location: {$route}");
             exit;
         }
+    }
+
+    /**
+     * @param string $name
+     * @param string $route
+     * @return string|null
+     */
+    public function url(string $name, string $route = null): ?string
+    {
+        return $this->custom($name, $route);
     }
 
 }
