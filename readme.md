@@ -28,7 +28,7 @@ composer require basecode/route
 or in your composer.json require:
 
 ```bash
-"basecode/route": "1.1.*"
+"basecode/route": "1.2.*"
 ```
 
 ## Usage
