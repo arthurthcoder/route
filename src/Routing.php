@@ -47,7 +47,6 @@ Abstract Class Routing
     /** @var bool */
     private $debug;
 
-
     /**
      * @param string|null $domain
      * @param string|null $namespace
@@ -76,7 +75,12 @@ Abstract Class Routing
      */
     public function group(?string $group): Routing
     {
-        $this->group = (empty($group) ? null : $this->trimBar($group));
+        $this->group = $group;
+
+        if ($this->group) {
+            $this->group = $this->trimBar($this->group);
+        }
+
         return $this;
     }
 
@@ -347,14 +351,12 @@ Abstract Class Routing
     {
         $data = (isset($route["data"]) ? $route["data"] : []);
 
-        if (is_callable($route["action"])) {
-            call_user_func($route["action"], $data);
-        }else{
-            $explode = explode(self::CONFIG["separator"], $route["action"]);
+        if (is_string($route["action"])) {
+            $explode = explode($this->separator, $route["action"]);
             $controller = (isset($explode[0]) ? $explode[0] : null);
             $action = (isset($explode[1]) ? $explode[1] : null);
 
-            if (!$controller || !$action) {
+            if (empty($controller) || empty($action)) {
                 $this->error("A string de ação {$route["action"]} é inválida!");
                 return;
             }
@@ -370,6 +372,11 @@ Abstract Class Routing
             }
 
             (new $controller($this))->$action($data);
+            return;
+        }
+
+        if (is_callable($route["action"])) {
+            call_user_func($route["action"], $data);
         }
     }
 

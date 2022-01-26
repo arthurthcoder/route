@@ -7,7 +7,6 @@ namespace BaseCode\Route;
  */
 Class Route extends Routing
 {
-
     /**
      * @param string $domain
      * @param string $namespace
@@ -23,7 +22,7 @@ Class Route extends Routing
 
     /**
      * @param string $route
-     * @param mixed $action
+     * @param $action
      * @param string|null $name
      * @return Route
      */
@@ -35,7 +34,7 @@ Class Route extends Routing
 
     /**
      * @param string $route
-     * @param mixed $action
+     * @param $action
      * @param string|null $name
      * @return Route
      */
@@ -47,7 +46,7 @@ Class Route extends Routing
 
     /**
      * @param string $route
-     * @param mixed $action
+     * @param $action
      * @param string|null $name
      * @return Route
      */
@@ -59,7 +58,7 @@ Class Route extends Routing
 
     /**
      * @param string $route
-     * @param mixed $action
+     * @param $action
      * @param string|null $name
      * @return Route
      */
@@ -71,7 +70,7 @@ Class Route extends Routing
 
     /**
      * @param string $route
-     * @param mixed $action
+     * @param $action
      * @param string|null $name
      * @return Route
      */
@@ -106,7 +105,12 @@ Class Route extends Routing
     public function route(string $name, array $data = [], string $method = null): ?string
     {
         $route = $this->find($name, $method, "name", $data);
-        return (empty($route) ? null : $this->trimBar("{$this->domain}/{$route['route']}"));
+
+        if ($route) {
+            return $this->trimBar("{$this->domain}/{$route['route']}");
+        }
+
+        return null;
     }
 
     /**

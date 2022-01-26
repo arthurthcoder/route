@@ -7,7 +7,7 @@
     define("DOMAIN", "https://localhost/basecode/route/examples");
 
     // $route = new BaseCode\Route\Route(DOMAIN, "Controllers", ":");
-    $route = new BaseCode\Route\Route(DOMAIN);
+    $route = new BaseCode\Route\Route(DOMAIN, "Controllers", "::");
     // $route->debug(true);
 
     /* METHODS ALLOWED
@@ -20,13 +20,13 @@
 
     $route->url('css', 'assets/css');
 
-    $route->namespace("Controllers");
-
     $route->get("/", function($data) use ($route) {
         // $route->redirect("landing.page");
         echo $route->url('css');
         echo "<h1>HOME PAGE</h1><br><a href=\"{$route->route('user.login')}\">Login</a>";
     }, "home");
+
+    $route->get("/login", "UserController::login", "user.login");
 
     $route->group("hello");
 
