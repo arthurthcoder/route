@@ -19,4 +19,4 @@ $route->get("/login", "UserController::login", "site.login");
 $route->post("/login-auth", "UserController::auth", "site.auth");
 $route->get("/product/{user_id}/{id}/details", "UserController::product", "site.product");
 
-$route->test();
+$route->execute();

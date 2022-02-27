@@ -1,5 +1,5 @@
 <?php
-namespace BaseCode\Route;
+namespace BaseCode\Route\Url;
 
 Class Url
 {
