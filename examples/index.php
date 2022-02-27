@@ -1,54 +1,22 @@
 <?php
-    define("DS", DIRECTORY_SEPARATOR);
+define("DS", DIRECTORY_SEPARATOR);
+define("DOMAIN", "https://localhost/basecode/route/examples/");
 
-    require_once dirname(__DIR__).DS."vendor".DS."autoload.php";
-    require_once dirname(__DIR__).DS."examples".DS."Controllers".DS."UserController.php";
+require_once dirname(__DIR__).DS."vendor".DS."autoload.php";
+require_once dirname(__DIR__).DS."examples".DS."Controllers".DS."UserController.php";
 
-    define("DOMAIN", "https://localhost/basecode/route/examples");
+use BaseCode\Route\Route;
 
-    // $route = new BaseCode\Route\Route(DOMAIN, "Controllers", ":");
-    $route = new BaseCode\Route\Route(DOMAIN, "Controllers", "::");
-    // $route->debug(true);
+$route = new Route(DOMAIN, "::");
 
-    /* METHODS ALLOWED
-        $route->get(string:route, string|function:action, string:name_route);
-        $route->post(string:route, string|function:action, string:name_route);
-        $route->put(string:route, string|function:action, string:name_route);
-        $route->patch(string:route, string|function:action, string:name_route);
-        $route->delete(string:route, string|function:action, string:name_route);
-    */
+$route->get("/", function(){
+    echo "<h1>Hello World :)</h1>";
+}, "site.home");
 
-    $route->url('css', 'assets/css');
+$route->namespace("App\\Controllers\\Admin")->group("admin");
 
-    $route->get("/", function($data) use ($route) {
-        // $route->redirect("landing.page");
-        echo $route->url('css');
-        echo "<h1>HOME PAGE</h1><br><a href=\"{$route->route('user.login')}\">Login</a>";
-    }, "home");
+$route->get("/login", "UserController::login", "site.login");
+$route->post("/login-auth", "UserController::auth", "site.auth");
+$route->get("/product/{user_id}/{id}/details", "UserController::product", "site.product");
 
-    $route->get("/login", "UserController::login", "user.login");
-
-    $route->group("hello");
-
-    $route->get("/{name}", function($data) {
-        echo "<h1>Olá {$data['name']}</h1>";
-    }, "hello");
-    /* group hello end */
-
-
-    $route->namespace(null)->group("usuario");
-
-    $route->get("login", "UserController:login", "user.login");
-    /* group usuario end */
-
-    $route->group(null);
-
-    $route->get("landing", function($data) {
-        echo "<h1>LANDING PAGE</h1>";
-    }, "landing.page");
-
-    $route->default(function() use ($route) {
-        echo "<h1>404 NOT FOUND</h1><br><a href=\"{$route->route('home')}\">Inicio</a>";
-    })->execute();
-
-?>
+$route->test();
