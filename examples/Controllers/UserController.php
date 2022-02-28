@@ -8,15 +8,17 @@ Class UserController
     public function __construct($route)
     {
         $this->route = $route;
-        $this->route->url('css', 'assets/css');
     }
 
     public function login()
     {
-        $current = $this->route->current();
-        $css = $this->route->url('css');
-        echo "<h1>LOGIN PAGE: {$current}</h1>";
-        echo "<h2>CSS: {$css}</h2>";
+        echo "<h1>LOGIN PAGE</h1><br><a href=\"{$this->route->route("site.home")}\">Inicio</a>";
+    }
+
+    public function error($data)
+    {
+        $message = $data["message"];
+        echo "<h1>{$message}</h1>";
     }
 
 }

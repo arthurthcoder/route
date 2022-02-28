@@ -10,11 +10,10 @@ Abstract Class Router
 {
     private $domain;
     private $separatorAction;
-
     private $routes;
     private $namespace;
     private $group;
-
+    private $standard;
     private $error;
 
     public function __construct(string $domain = "/", string $separator = ":")
@@ -167,41 +166,39 @@ Abstract Class Router
         return null;
     }
 
-    private function action(?stdClass $route)
+    private function action($action, $params)
     {
         try {
-
-            if (empty($route)) {
-                throw new Exception("route_does_not_exists", 404);
+            if (!is_string($action) && is_callable($action)) {
+                return call_user_func($action, $params);
             }
     
-            if (is_callable($route->action)) {
-                return call_user_func($route->action, $route->params);
-            }
-    
-            $action = explode($this->separatorAction, $route->action);
+            $action = explode($this->separatorAction, $action);
 
             if (count($action) < 2) {
-                throw new Exception("action_invalid_route( {$route->name} )", 404);
+                $action = implode($this->separatorAction, $action);
+                throw new Exception("String action invalid: {$action}", 404);
             }
 
             $class = $action[0];
 
             if (!class_exists($class)) {
-                throw new Exception("class_does_not_exists_route( {$route->name} )", 404);
+                throw new Exception("Class does not exists: {$class}", 404);
             }
 
             $method = $action[1];
 
             if (!method_exists($class, $method)) {
-                throw new Exception("method_does_not_exists_in_class_route( {$route->name} )", 404);
+                throw new Exception("The method: {$method} of class: {$class} does not exists", 404);
             }
 
-            return (new $class($this))->$method($route->params);
+            return (new $class($this))->$method($params);
 
         }catch(Exception $e) {
-            Http::error($e->getCode());
-            $this->error = $e->getMessage();
+            $this->error = [
+                "message" => $e->getMessage(),
+                "code" => $e->getCode()
+            ];
         }
     }
 
@@ -209,16 +206,49 @@ Abstract Class Router
     {
         $requested = Url::trim(Http::get($get) ?: "/") ?: "/";
         $route = $this->search($requested, [], false, Http::method());
-        $this->action($route);
+        
+        if ($route) {
+            $action = $this->action($route->action, $route->params);
+
+            if ($this->error && $this->standard) {
+                Http::error($this->error["code"]);
+                return $this->action($this->standard, $this->error);
+            }
+
+            return $action;
+        }
+
+        $this->error = ["message" => "Route not found", "code" => 404];
+        Http::error($this->error["code"]);
+
+        if ($this->standard) {
+            return $this->action($this->standard, $this->error);
+        }
     }
 
-    public function test()
+    public function standard($standard): Router
     {
-        echo "<pre>";
-        print_r($this->route("site.product", [
-            "id" => 22,
-            "user_id" => 1
-        ]));
-        echo "<pre>";
+        if (is_string($standard) || is_callable($standard)) {
+            if (is_string($standard) && $this->namespace) {
+                $standard = "{$this->namespace}\\{$standard}";
+            }
+            $this->standard = $standard;
+        }
+
+        return $this;
+    }
+
+    public function redirect(string $redirect, array $params = []): void
+    {
+        $redirect = filter_var($redirect, FILTER_VALIDATE_URL) ?: $this->route($redirect, $params);
+        if ($redirect) {
+            header("Location: {$redirect}");
+            exit;
+        }
+    }
+
+    public function error(): ?array
+    {
+        return $this->error;
     }
 }
