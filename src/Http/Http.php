@@ -1,26 +1,42 @@
 <?php
 namespace BaseCode\Route\Http;
 
+/**
+ * class Http
+ * @package BaseCode\Route
+ */
 class Http
 {
-    public static function get(string $name = null)
+    /**
+     * @param string|null $name
+     * @param $default
+     */
+    public static function get(string $name = null, $default = null)
     {
         if ($name) {
-            return filter_input(INPUT_GET, $name, FILTER_DEFAULT);
+            return  filter_input(INPUT_GET, $name, FILTER_DEFAULT) ?: $default;
         }
 
         return filter_input_array(INPUT_GET);
     }
 
-    public static function post(string $name = null)
+    /**
+     * @param string|null $name
+     * @param $default
+     */
+    public static function post(string $name = null, $default = null)
     {
         if ($name) {
-            return filter_input(INPUT_POST, $name, FILTER_DEFAULT);
+            return filter_input(INPUT_POST, $name, FILTER_DEFAULT) ?: $default;
         }
 
         return filter_input_array(INPUT_POST);
     }
 
+    /**
+     * @param bool $spoofing
+     * @return string
+     */
     public static function method(bool $spoofing = false): string
     {
         if ($spoofing) {
@@ -41,10 +57,5 @@ class Http
         }
 
         return "GET";
-    }
-
-    public static function error(int $code): void
-    {
-        http_response_code($code);
     }
 }

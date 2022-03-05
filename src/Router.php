@@ -2,38 +2,73 @@
 namespace BaseCode\Route;
 
 use stdClass;
+use Exception;
 use BaseCode\Route\Url\Url;
 use BaseCode\Route\Http\Http;
-use Exception;
 
-Abstract Class Router
+/**
+ * class Router
+ * @package BaseCode\Route
+ */
+abstract class Router
 {
+    /** @var string */
     private $domain;
-    private $separatorAction;
+    
+    /** @var string */
+    private $actionSeparator;
+
+    /** @var array */
     private $routes;
+
+    /** @var string|null */
     private $namespace;
+
+    /** @var string|null */
     private $group;
+
+    /** @var string|callable */
     private $standard;
+
+    /** @var array */
     private $error;
 
+    /**
+     * @param string $domain
+     * @param string $separator
+     */
     public function __construct(string $domain = "/", string $separator = ":")
     {
         $this->domain = Url::trim($domain) ?: "/";
-        $this->separatorAction = $separator;
+        $this->actionSeparator = $separator;
     }
 
-    public function namespace(string $namespace): Router
+
+    /**
+     * @param string|null $namespace
+     * @return Router
+     */
+    public function namespace(?string $namespace): Router
     {
         $this->namespace = $namespace;
         return $this;
     }
 
-    public function group(string $group = null): Router
+    /**
+     * @param string|null $group
+     * @return Router
+     */
+    public function group(?string $group): Router
     {
         $this->group = Url::trim($group ?: "");
         return $this;
     }
 
+
+    /**
+     * @param string|null $path
+     * @return string|null
+     */
     public function domain(string $path = null): ?string
     {
         if ($this->domain) {
@@ -49,6 +84,14 @@ Abstract Class Router
         return null;
     }
 
+
+    /**
+     * @param string $method
+     * @param string $route
+     * @param $action
+     * @param string|null $name
+     * @return Router
+     */
     protected function addRoute(string $method, string $route, $action, ?string $name): Router
     {
         $this->routes = $this->routes ?: [];
@@ -78,6 +121,11 @@ Abstract Class Router
         return $this;
     }
 
+    /**
+     * @param string|null $method
+     * @param bool $encapsulate
+     * @return array
+     */
     private function routes(string $method = null, bool $encapsulate = false): array
     {
         if ($method) {
@@ -91,6 +139,14 @@ Abstract Class Router
         return $this->routes ?: [];
     }
 
+
+    /**
+     * @param string $search
+     * @param array $params
+     * @param bool $name
+     * @param string|null $method
+     * @return stdClass|null
+     */
     private function search(
         string $search,
         array $params = [],
@@ -110,6 +166,13 @@ Abstract Class Router
         return null;
     }
 
+    /**
+     * @param stdClass $route
+     * @param string $search
+     * @param array $params
+     * @param bool $name
+     * @return stdClass|null
+     */
     private function engine(stdClass $route, string $search, array $params, bool $name): ?stdClass
     {
         if ($name) {
@@ -155,6 +218,11 @@ Abstract Class Router
         return null;
     }
 
+    /**
+     * @param string $name
+     * @param array $params
+     * @return string|null
+     */
     public function route(string $name, array $params = []): ?string
     {
         $route = $this->search($name, $params);
@@ -166,17 +234,21 @@ Abstract Class Router
         return null;
     }
 
-    private function action($action, $params)
+    /**
+     * @param $action
+     * @param array $params
+     */
+    private function action($action, array $params)
     {
         try {
             if (!is_string($action) && is_callable($action)) {
                 return call_user_func($action, $params);
             }
     
-            $action = explode($this->separatorAction, $action);
+            $action = explode($this->actionSeparator, $action);
 
-            if (count($action) < 2) {
-                $action = implode($this->separatorAction, $action);
+            if (count($action) != 2) {
+                $action = implode($this->actionSeparator, $action);
                 throw new Exception("String action invalid: {$action}", 404);
             }
 
@@ -202,30 +274,35 @@ Abstract Class Router
         }
     }
 
-    public function execute(string $get = "route")
+    /**
+     * @param string $route
+     */
+    public function execute(string $route = "route", bool $spoofing = false): void
     {
-        $requested = Url::trim(Http::get($get) ?: "/") ?: "/";
-        $route = $this->search($requested, [], false, Http::method());
+        $route = Url::trim(Http::get($route, "/")) ?: "/";
+        $route = $this->search($route, [], false, Http::method($spoofing));
         
         if ($route) {
-            $action = $this->action($route->action, $route->params);
+            $this->action($route->action, $route->params);
 
             if ($this->error && $this->standard) {
-                Http::error($this->error["code"]);
-                return $this->action($this->standard, $this->error);
+                $this->action($this->standard, $this->error);
             }
 
-            return $action;
+            return;
         }
 
         $this->error = ["message" => "Route not found", "code" => 404];
-        Http::error($this->error["code"]);
 
         if ($this->standard) {
-            return $this->action($this->standard, $this->error);
+            $this->action($this->standard, $this->error);
         }
     }
 
+    /**
+     * @param $standard
+     * @return Router
+     */
     public function standard($standard): Router
     {
         if (is_string($standard) || is_callable($standard)) {
@@ -238,6 +315,11 @@ Abstract Class Router
         return $this;
     }
 
+
+    /**
+     * @param string $redirect
+     * @param array $params
+     */
     public function redirect(string $redirect, array $params = []): void
     {
         $redirect = filter_var($redirect, FILTER_VALIDATE_URL) ?: $this->route($redirect, $params);
@@ -247,6 +329,9 @@ Abstract Class Router
         }
     }
 
+    /**
+     * @return array|null
+     */
     public function error(): ?array
     {
         return $this->error;

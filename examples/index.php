@@ -9,13 +9,15 @@ use BaseCode\Route\Route;
 
 $route = new Route(DOMAIN, "::");
 
+$route->get("/", function() use ($route){
+    echo "<h1>Hello World :)</h1><br>";
+    echo "<a href=\"{$route->route("site.login")}\">Login</a>";
+}, "site.home");
+
 $route->get("/redir", function() use ($route){
     $route->redirect("site.hello", ["name" => "coder"]);
 }, "site.redir");
 
-$route->get("/", function() use ($route){
-    echo "<h1>Hello World :)</h1><br><a href=\"{$route->route("site.login")}\">Login</a>";
-}, "site.home");
 
 $route->get("/{name}", function($data){
     $name = $data["name"];
@@ -31,7 +33,10 @@ $route->namespace("Controllers")->group("admin");
 
 $route->get("/login", "UserController::login", "site.login");
 
-$route->standard("UserController::error");
+$route->namespace(null)->standard(function($error){
+    $message = $error["message"];
+    echo "<h1>{$message}</h1>";
+});
 
 $route->execute();
 

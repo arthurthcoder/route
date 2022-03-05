@@ -28,7 +28,7 @@ composer require basecode/route
 or in your composer.json require:
 
 ```bash
-"basecode/route": "1.2.*"
+"basecode/route": "2.0.*"
 ```
 
 ## Usage
@@ -63,19 +63,17 @@ require_once dirname(__DIR__).DS."vendor".DS."autoload.php";
 use BaseCode\Route\Route;
 
 /*
-    domain_name [string] [required]
-    controller_path_base [string|function] [optional] [default] = null
-    separator_controller_method [string] [optional] [default] = :
+    domain_url [string] [required]
+    separator_controller_method [string] [optional] [default] = ":"
 
-    $route = new Route(domain_name, controller_path_base, separator_controller_method);
+    $route = new Route(domain_url, separator_controller_method);
 
     # EXAMPLE
-    $route = new Route(DOMAIN, "Controllers", ":");
+    $route = new Route(DOMAIN, ":");
 
 */
 
 $route = new Route(DOMAIN);
-$route->debug(true); // Use debug for testing only.
 
 /*
     route [string] [required]
@@ -87,8 +85,8 @@ $route->debug(true); // Use debug for testing only.
     $route->put(route, route_action, route_name);
     $route->delete(route, route_action, route_name);
     
-    // the default method can only be called once.
-    $route->default(route_action);
+    action [string|function]
+    $route->standard(action);
 
 
     # EXAMPLE
@@ -111,28 +109,26 @@ $route->get("/", "Controller:login", "admin.login");
 $route->execute();
 /*
     or
-    $uri = filter_input(INPUT_GET, "uri", FILTER_SANITIZE_URL);
-    $route->execute($uri);
+    $route->execute("route"); // route is the name received by $_GET
 */
 ```
 
-### Creating default route
+### Creating standard route
 
-The default route is used when the route requested via the url is not found.
+The standard route is used when the route requested via the url is not found.
 
-Example **default** route:
+Example **standard** route:
 
 ```php
 $route = new Route(DOMAIN);
-$route->debug(true); // Use debug for testing only.
 
 $route->get("/", function() {
     echo "<h1>HOME PAGE</h1>";
 }, "home");
 
-$route->default(function() {
-    http_response_code(404);
-    echo "<h1>404 NOT FOUND</h1>";
+$route->standard(function($error) {
+    http_response_code($error["code"]);
+    echo "<h1>ERROR: ".$error["message"]."</h1>";
 });
 
 $route->execute();
@@ -146,7 +142,6 @@ Example **route** method:
 
 ```php
 $route = new Route(DOMAIN);
-$route->debug(true); // Use debug for testing only.
 
 $route->get("/", function() use ($route) {
 
@@ -173,7 +168,6 @@ Example **parameters** for route:
 
 ```php
 $route = new Route(DOMAIN);
-$route->debug(true); // Use debug for testing only.
 
 $route->get("hello/{name}", function($data) {
 

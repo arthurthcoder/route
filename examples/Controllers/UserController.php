@@ -15,9 +15,11 @@ Class UserController
         echo "<h1>LOGIN PAGE</h1><br><a href=\"{$this->route->route("site.home")}\">Inicio</a>";
     }
 
-    public function error($data)
+    public function error($error)
     {
-        $message = $data["message"];
+        http_response_code($error["code"]);
+        
+        $message = $error["message"];
         echo "<h1>{$message}</h1>";
     }
 
