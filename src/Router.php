@@ -21,6 +21,9 @@ abstract class Router
     /** @var array */
     private $routes;
 
+    /** @var string */
+    private $currentRoute;
+
     /** @var string|null */
     private $namespace;
 
@@ -235,6 +238,14 @@ abstract class Router
     }
 
     /**
+     * @return string|null
+     */
+    public function current(): ?string
+    {
+        return $this->currentRoute;
+    }
+
+    /**
      * @param $action
      * @param array $params
      */
@@ -280,6 +291,7 @@ abstract class Router
     public function execute(string $route = "route", bool $spoofing = false): void
     {
         $route = Url::trim(Http::get($route, "/")) ?: "/";
+        $this->currentRoute = $this->domain($route);
         $route = $this->search($route, [], false, Http::method($spoofing));
         
         if ($route) {

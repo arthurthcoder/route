@@ -179,4 +179,70 @@ $route->get("hello/{name}", function($data) {
 $route->execute();
 ```
 
+### Get url of current route
+
+It is possible to get the url of the current route using the (current) method
+
+Example of **current route**:
+
+```php
+$route = new Route(DOMAIN);
+
+$route->get("product/{id}", function() use ($route) {
+
+    $current = $route->current();
+    echo "<p>ROUTE: {$current}</p>";
+
+}, "product.page");
+
+$route->execute();
+```
+
+### Route redirection
+
+It is possible to redirect routes using the (redirect) method.
+
+Example of **redirect** :
+
+```php
+$route = new Route(DOMAIN);
+
+// REDIRECT OPTIONS
+
+/* USING NAME
+
+    ROUTES EXAMPLES (
+        $route->get("/home", route_action, "page.home");
+        $route->get("/product/{id}", route_action, "page.product");
+    )
+
+    $route->redirect("page.home"); // redirect to domain/home
+    $route->redirect("page.product", ["id" => 10]); // redirect to domain/product/10
+*/
+
+/* USING URL
+    $route->redirect("https://www.google.com"); // redirect to passed URL
+*/
+
+$route->group("admin");
+
+$route->get("/login", function() {
+
+    echo "<h1>ADMIN LOGIN</h1>";
+
+}, "admin.login");
+
+$route->get("/home", function() use ($route) {
+
+    if (!isset($_SESSION["ADMIN_USER"])) {
+        $route->redirect("admin.login");
+    }
+
+    echo "<h1>ADMIN HOME</h1>";
+
+}, "admin.home");
+
+$route->execute();
+```
+
 > To be continued...
